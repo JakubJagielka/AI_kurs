@@ -1,20 +1,22 @@
 """Web search grounding -- LLM-y nie znaja dzisiejszych wiadomosci, ale mozesz dac im narzedzia ktore znaja."""
 
 import os
+from google import genai
+from google.genai import types
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = AzureOpenAI(
+azure_client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
     api_version="2024-12-01-preview",
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
 )
 
 # Najpierw: pytamy bez groundingu -- LLM odmowi albo zhallucynuje
-print("=== Bez web search ===")
-response = client.chat.completions.create(
+print("=== Bez web search (Azure OpenAI) ===")
+response = azure_client.chat.completions.create(
     model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
     messages=[
         {"role": "user", "content": "What are today's top tech news headlines?"},
@@ -23,28 +25,31 @@ response = client.chat.completions.create(
 print(response.choices[0].message.content)
 print()
 
-# Teraz: z web search groundingiem (Azure OpenAI z Bing grounding)
-# Uwaga: wymaga zasobu Bing Search podlaczonego do Azure OpenAI
-print("=== Z web search groundingiem ===")
+# Teraz: z web search groundingiem przez Gemini + Google Search
+# Gemini ma wbudowane narzedzie Google Search -- nie wymaga osobnej konfiguracji!
+print("=== Z Google Search groundingiem (Gemini) ===")
 try:
-    response = client.chat.completions.create(
-        model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
-        messages=[
-            {"role": "user", "content": "What are today's top tech news headlines?"},
-        ],
-        extra_body={
-            "data_sources": [
-                {
-                    "type": "bing_grounding",
-                    "parameters": {
-                        "connection_id": os.getenv("BING_CONNECTION_ID", ""),
-                    },
-                }
-            ]
-        },
+    gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+    grounding_tool = types.Tool(
+        google_search=types.GoogleSearch()
     )
-    print(response.choices[0].message.content)
+
+    config = types.GenerateContentConfig(
+        tools=[grounding_tool]
+    )
+
+    response = gemini_client.models.generate_content(
+        model="gemini-3-flash-preview",
+        contents="What are today's top tech news headlines?",
+        config=config,
+    )
+
+    print(response.text)
 except Exception as e:
-    print(f"Web search nie skonfigurowany: {e}")
-    print("Spokoj -- chodzi o to ze LLM-y potrzebuja zewnetrznych narzedzi do danych real-time.")
-    print("Podlaczylbys Bing Search albo uzywal serwisu jak Perplexity.")
+    print(f"Gemini Google Search nie zadziałał: {e}")
+    print("Sprawdz czy GEMINI_API_KEY jest ustawiony w pliku .env")
+
+print()
+print("Kluczowy wniosek: LLM-y same z siebie NIE wiedza co sie dzieje dzisiaj.")
+print("Musisz dac im narzedzie (Google Search, Bing, itp.) zeby mogly sprawdzic.")

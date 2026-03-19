@@ -31,7 +31,6 @@ def chat(user_message: str) -> str:
     response = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
         messages=conversation_history,  # <-- CALA historia leci do API
-        temperature=0.7,
     )
 
     assistant_message = response.choices[0].message.content

@@ -1,28 +1,52 @@
-"""Generowanie obrazu z prompta tekstowego przez DALL-E."""
+"""Generowanie obrazu z prompta tekstowego przez Google Imagen 4.0."""
+
+# pip install google-genai
 
 import os
-from openai import AzureOpenAI
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2024-12-01-preview",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-)
 
-response = client.images.generate(
-    model="dall-e-3",
-    prompt="A cozy coffee shop on a rainy day, watercolor style",
-    size="1024x1024",
-    quality="standard",
-    n=1,
-)
+def generate():
+    client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-image_url = response.data[0].url
-print(f"URL obrazka: {image_url}")
-print("Otworz ten URL w przegladarce zeby zobaczyc wynik!")
+    prompt = "A cozy coffee shop on a rainy day, watercolor style"
+    print(f"Prompt: {prompt}")
+    print("Generowanie obrazu przez Imagen 4.0...")
+
+    result = client.models.generate_images(
+        model="models/imagen-4.0-generate-001",
+        prompt=prompt,
+        config=dict(
+            number_of_images=1,
+            output_mime_type="image/jpeg",
+            person_generation="ALLOW_ADULT",
+            aspect_ratio="1:1",
+            image_size="1K",
+        ),
+    )
+
+    if not result.generated_images:
+        print("Nie wygenerowano zadnych obrazow.")
+        return
+
+    if len(result.generated_images) != 1:
+        print("Liczba wygenerowanych obrazow nie zgadza sie z zamowiona.")
+
+    output_dir = os.path.dirname(__file__)
+    for n, generated_image in enumerate(result.generated_images):
+        filepath = os.path.join(output_dir, f"generated_image_{n}.jpg")
+        generated_image.image.save(filepath)
+        print(f"Zapisano: {filepath}")
+
+    print("Gotowe! Sprawdz wygenerowany plik.")
+
+
+if __name__ == "__main__":
+    generate()
 
 # --- Sprobuj sam ---
 # Zmien prompt. Przetestuj rozne style: "pixel art", "oil painting", "photograph".
+# Zmien aspect_ratio na "16:9" lub "9:16". Zmien number_of_images na 2-4.

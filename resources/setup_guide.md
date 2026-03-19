@@ -56,9 +56,33 @@ git config --global user.email "your@email.com"
 2. Pobierz klucz API
 3. Darmowy tier: w zupelnosci wystarczy na ten kurs
 
+> **Uwaga:** Klucz Gemini jest tez potrzebny do demo generowania obrazow (Imagen 4.0)
+> oraz do porownania providerow (demo 09). Polecam miec oba klucze.
+
 ---
 
-## 5. Ollama (potrzebne do lekcji 3-4)
+## 5. Plik `.env` -- konfiguracja kluczy API
+
+W katalogu glownym repozytorium (`AI_kurs/`) stworz plik `.env`:
+
+```ini
+# Azure OpenAI
+AZURE_OPENAI_API_KEY=twoj-klucz-azure
+AZURE_OPENAI_ENDPOINT=https://twoj-zasob.cognitiveservices.azure.com/
+AZURE_OPENAI_DEPLOYMENT=gpt-5.3-chat
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-3-small
+
+# Google Gemini (do generowania obrazow + porownanie providerow)
+GEMINI_API_KEY=twoj-klucz-gemini
+```
+
+**Wazne:**
+- Plik `.env` **nigdy** nie powinien trafic na Githuba -- dodaj go do `.gitignore`
+- Kazdy demo skrypt automatycznie czyta ten plik dzieki `python-dotenv`
+
+---
+
+## 6. Ollama (potrzebne do lekcji 3-4)
 
 **Instalacja:** https://ollama.com/download
 
@@ -76,31 +100,52 @@ Download modelu to ~2 GB. **Zrob to w domu**, nie na wifi w sali.
 
 ---
 
-## 6. Setup srodowiska (per projekt)
-
-Kiedy zaczynamy kazdy projekt, odpalasz:
+## 7. Setup srodowiska (krok po kroku)
 
 ```bash
-# Sklonuj template repo
-git clone https://github.com/YOUR-USERNAME/genai-pdf-generator
-cd genai-pdf-generator
+# 1. Sklonuj repozytorium
+git clone https://github.com/JakubJagielka/AI_kurs.git
+cd AI_kurs
 
-# Stworz wirtualne srodowisko
+# 2. Stworz wirtualne srodowisko
 python -m venv venv
 
-# Aktywuj je
-# Windows:
-venv\Scripts\activate
+# 3. Aktywuj je
+# Windows (PowerShell):
+venv\Scripts\Activate.ps1
+# Windows (cmd):
+venv\Scripts\activate.bat
 # Mac/Linux:
 source venv/bin/activate
 
-# Zainstaluj zaleznosci
+# 4. Zainstaluj WSZYSTKIE zaleznosci jednym poleceniem
 pip install -r requirements.txt
 
-# Skopiuj zmienne srodowiskowe
-cp .env.example .env
-# Potem edytuj .env swoimi kluczami API
+# 5. Skopiuj i uzupelnij plik .env (patrz sekcja 5 powyzej)
+# Jesli nie masz pliku .env -- stworz go i wklej swoje klucze API
+
+# 6. Sprawdz czy dziala -- odpal pierwsze demo
+python lesson_01/demos/01_first_llm_call.py
 ```
+
+### Co jest w `requirements.txt`?
+
+| Pakiet | Do czego | Lekcje |
+|--------|----------|--------|
+| `openai` | Azure OpenAI SDK | 1-4 |
+| `python-dotenv` | Ladowanie `.env` | 1-4 |
+| `numpy` | Wektory, cosine similarity | 1-2 |
+| `google-genai` | Imagen 4.0 (generowanie obrazow) | 1 |
+| `google-generativeai` | Gemini chat API | 1 |
+| `transformers` + `torch` | Modele HuggingFace lokalnie | 3 |
+| `datasets` + `scipy` | Dane + zapis audio | 3 |
+| `ollama` | Klient Python dla Ollama | 3-4 |
+| `mcp` | Model Context Protocol SDK | 4 |
+
+> **Tip:** Jesli chcesz zainstalowac tylko pakiety do lekcji 1-2 (szybciej, bez torch):
+> ```bash
+> pip install openai python-dotenv numpy google-genai google-generativeai
+> ```
 
 ---
 
@@ -121,6 +166,8 @@ cp .env.example .env
 - [ ] Python 3.11+ zainstalowany i dziala
 - [ ] VS Code zainstalowany z rozszerzeniami Python + Copilot
 - [ ] Git zainstalowany, konto GitHub stworzone
-- [ ] Przynajmniej jeden klucz API dziala (Azure OpenAI lub Gemini)
+- [ ] Plik `.env` stworzony z kluczami API (Azure OpenAI + Gemini)
+- [ ] `pip install -r requirements.txt` przeszlo bez bledow
 - [ ] Ollama zainstalowane, model `llama3.2:3b` pobrany
+- [ ] `python lesson_01/demos/01_first_llm_call.py` dziala
 - [ ] Gotowy zeby budowac fajne rzeczy z AI

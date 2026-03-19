@@ -1,0 +1,8 @@
+# === Wymagane przez caly kurs ===
+openai>=1.40.0          # Azure OpenAI SDK (lekcje 1-4)
+python-dotenv>=1.0.0    # Ladowanie zmiennych srodowiskowych z .env
+numpy>=1.26.0           # Operacje na wektorach (embeddingi, cosine similarity)
+google-genai>=1.0.0     # Imagen 4.0 generowanie obrazow (demo 03)
+google-generativeai>=0.8.0  # Gemini chat API (demo 09 multi-provider)
+
+

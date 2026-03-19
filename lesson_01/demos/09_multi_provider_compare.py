@@ -20,22 +20,23 @@ def call_azure_openai(prompt: str) -> tuple[str, float]:
     response = client.chat.completions.create(
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
     )
     elapsed = time.time() - start
     return response.choices[0].message.content, elapsed
 
 
 def call_gemini(prompt: str) -> tuple[str, float]:
-    """Gemini przez OpenAI-kompatybilny endpoint."""
+    """Gemini przez google-genai SDK."""
     try:
-        import google.generativeai as genai
+        from google import genai
 
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
         start = time.time()
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+        )
         elapsed = time.time() - start
         return response.text, elapsed
     except Exception as e:

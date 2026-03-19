@@ -68,7 +68,7 @@ if message.tool_calls:
         model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
         messages=[
             {"role": "user", "content": "What's the weather like in Tokyo?"},
-            message,
+            message.model_dump(),
             {
                 "role": "tool",
                 "tool_call_id": tool_call.id,

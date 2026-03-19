@@ -13,7 +13,10 @@ client = AzureOpenAI(
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
 )
 
-IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg"
+IMAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "resources", "Cat03.jpg")
+
+with open(IMAGE_PATH, "rb") as f:
+    image_data = base64.b64encode(f.read()).decode("utf-8")
 
 response = client.chat.completions.create(
     model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
@@ -22,7 +25,10 @@ response = client.chat.completions.create(
             "role": "user",
             "content": [
                 {"type": "text", "text": "What do you see in this image? Be specific."},
-                {"type": "image_url", "image_url": {"url": IMAGE_URL}},
+                {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/jpeg;base64,{image_data}"},
+            },
             ],
         }
     ],

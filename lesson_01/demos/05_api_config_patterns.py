@@ -27,7 +27,6 @@ def call_llm_with_retry(messages: list, max_attempts: int = 3) -> str:
             response = client.chat.completions.create(
                 model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-5.3-chat"),
                 messages=messages,
-                temperature=0.7,
             )
             return response.choices[0].message.content
 
