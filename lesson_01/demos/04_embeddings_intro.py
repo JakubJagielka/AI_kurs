@@ -1,25 +1,21 @@
 """Generowanie wektora embedding -- tak komputery rozumieja znaczenie tekstu."""
 
-import os
 import numpy as np
-from openai import AzureOpenAI
+from google import genai
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = AzureOpenAI(
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    api_version="2024-12-01-preview",
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-)
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 
 def get_embedding(text: str) -> list[float]:
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=text,
+    result = client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text,
     )
-    return response.data[0].embedding
+    return result.embeddings[0].values
 
 
 def cosine_similarity(a, b):
